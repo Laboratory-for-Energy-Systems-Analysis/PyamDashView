@@ -1,0 +1,15 @@
+SSP1:
+  name: SSP1 - Sustainability (Green Road)
+  description: A world that shifts toward a more sustainable path, characterized by reduced resource and energy consumption, lower fossil fuel dependence, and an emphasis on well-being rather than consumption. Cooperation between nations is high, leading to sustainable and inclusive economic growth, technological innovation, and reduced income and social inequality.
+SSP2:
+  name: SSP2 - Middle of the Road
+  description: A world that follows a path in which social, economic, and technological trends do not shift markedly from historical patterns. It represents a continuation of current trends, with some progress towards achieving development goals, reductions in resource and energy intensity at historic rates, and slowly decreasing fossil fuel dependency.
+SSP3:
+  name: SSP3 - Regional Rivalry (Rocky Road)
+  description: A world with greater regional disparities, where countries focus more on self-sufficiency and prioritize their national interests over global collective goals. There's less emphasis on achieving global development goals, leading to fragmented regions with disparities in economic growth, technological development, and energy consumption.
+SSP4:
+  name: SSP4 - Inequality (Road Divided)
+  description: A world of increasing inequality. In countries with high socio-economic challenges to mitigation, the wealthy have high standards of living, advanced technologies, and effective climate policies, while the poorer population faces challenges. In countries with low socio-economic challenges, the whole society struggles with adaptation and institutional barriers.
+SSP5:
+  name: SSP5 - Fossil-fueled Development (Taking the Highway)
+  description: A world that emphasizes economic growth as the route to achieving societal goals, driven by competitive markets, innovation, and consumerism. While this leads to higher levels of technological development and human capital, it's heavily reliant on fossil fuels. The energy system is dominated by carbon-intensive resources.

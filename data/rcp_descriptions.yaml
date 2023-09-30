@@ -1,0 +1,34 @@
+Base:
+    name: "Base"
+    description: "A scenario where emissions continue to grow at the same rate as in the past."
+RCP6:
+  name: "Representative Concentration Pathway 6.0 W/m2"
+  description: "A stabilization scenario where total radiative forcing is stabilized before 2100 by employment of a range of technologies and strategies for reducing greenhouse gas emissions."
+
+RCP45:
+  name: "Representative Concentration Pathway 4.5 W/m2"
+  description: "A stabilization scenario where greenhouse gas emissions peak around 2040, then decline, resulting in an increase in radiative forcing to 4.5 W/m^2 by the end of the century."
+
+RCP26:
+  name: "Representative Concentration Pathway 2.6 W/m2"
+  description: "A peak-and-decline scenario with the most stringent mitigation measures, where emissions peak before 2020 and lead to a radiative forcing level of 2.6 W/m^2 by 2100."
+
+RCP19:
+  name: "Representative Concentration Pathway 1.9 W/m2"
+  description: "A very stringent mitigation scenario aiming to limit global warming to 1.5°C above pre-industrial levels with a radiative forcing target of 1.9 W/m^2 by 2100."
+
+NDC:
+  name: "National Determined Contributions"
+  description: "Nationally Determined Contributions, where individual countries set emissions reduction targets in line with the Paris Agreement to limit global warming to well below 2°C."
+
+NPi:
+  name: "No additional Policy"
+  description: "No Policy scenario, a representation of future emissions if no climate policies or mitigation measures were implemented beyond those in place today."
+
+PkBudg1150:
+  name: "Peak Budget 1150 GtCO2"
+  description: "A scenario where cumulative emissions are limited to 1150 GtCO2, resulting in a 66% chance of limiting global warming to 2°C above pre-industrial levels."
+
+PkBudg500:
+  name: "Peak Budget 500 GtCO2"
+  description: "A scenario where cumulative emissions are limited to 500 GtCO2, resulting in a 66% chance of limiting global warming to 1.5°C above pre-industrial levels."

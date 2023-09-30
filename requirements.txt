@@ -1,0 +1,5 @@
+gunicorn
+dash
+whitenoise
+pandas
+openpyxl
