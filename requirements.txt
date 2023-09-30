@@ -1,5 +1,6 @@
 gunicorn
 dash
+dash-bootstrap-components
 whitenoise
 pandas
 openpyxl
