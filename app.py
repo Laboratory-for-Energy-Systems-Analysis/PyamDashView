@@ -239,6 +239,7 @@ def update_graphs(selected_combinations, selected_sector, selected_regions):
                           height=350)
 
 
+
         # Display the name and description of the scenario above each chart
         # Display the name and description of the scenario above each chart
         scenario_details = html.Div([
