@@ -30,7 +30,7 @@ Gasoline:
   label: Exajoules (EJ)
   expl_text: Generated volumes of gasoline-like fuel, per technology. Used to calculate fuel supply mixes.
   offset: 5
-Gasoline efficiency:
+Gasoline (efficiency):
   label: Efficiency gains (2020 = 1)
   expl_text: Energy efficiency gains per technology relative to 2020. Used to calibrate the efficiency of the (bio)fuel-producing datasets.
   offset: 5
@@ -38,7 +38,7 @@ Diesel:
   label: Exajoules (EJ)
   expl_text: Generated volumes of diesel-like fuel, per technology. Used to calculate fuel supply mixes.
   offset: 5
-Diesel efficiency:
+Diesel (efficiency):
   label: Efficiency gains (2020 = 1)
   expl_text: Energy efficiency gains per technology relative to 2020. Used to calibrate the efficiency of the (bio)fuel-producing datasets.
   offset: 5
@@ -46,7 +46,7 @@ Gas:
   label: Exajoules (EJ)
   expl_text: Generated volumes of gas-like fuel, per technology. Used to calculate fuel supply mixes.
   offset: 5
-Gas efficiency:
+Gas (efficiency):
   label: Efficiency gains (2020 = 1)
   expl_text: Energy efficiency gains per technology relative to 2020. Used to calibrate the efficiency of the (bio)fuel-producing datasets.
   offset: 5
@@ -54,7 +54,7 @@ Hydrogen:
   label: Exajoules (EJ)
   expl_text: Generated volumes of hydrogen fuel, per technology. Used to calculate fuel supply mixes.
   offset: 5
-Hydrogen efficiency:
+Hydrogen (efficiency):
   label: Efficiency gains (2020 = 1)
   expl_text: Energy efficiency gains per technology relative to 2020. Used to calibrate the efficiency of the (bio)fuel-producing datasets.
   offset: 5
@@ -62,7 +62,7 @@ Cement:
   label: Millions of tons (MT)
   expl_text: Generated volumes of cement.
   offset: 10
-Cement efficiency:
+Cement (efficiency):
   label: Efficiency gains (2020 = 1)
   expl_text: Energy efficiency gains relative to 2020. Used to calibrate the efficiency of the clinker-producing datasets.
   offset: 10
@@ -74,7 +74,7 @@ Steel:
   label: Millions of tons (MT)
   expl_text: Generated volumes of steel by type (i.e., primary vs. secondary). Used to calculate steel supply mixes.
   offset: 10
-Steel efficiency:
+Steel (efficiency):
   label: Efficiency gains (2020 = 1)
   expl_text: Energy efficiency gains per technology relative to 2020. Used to calibrate the efficiency of the steel-producing datasets.
   offset: 10
