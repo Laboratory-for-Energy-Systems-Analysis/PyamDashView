@@ -98,3 +98,7 @@ Transport (trucks):
   label: Vehicles-kilometers (million)
   expl_text: Number of vehicle-kilometers driven by trucks. Used to calculate fleet-average vehicles.
   offset: 7
+Battery:
+  label: Share of battery supply in capacity terms [%]
+  expl_text: Share of battery supply in capacity terms. Used to calculate the battery supply mix.
+  offset: 3
