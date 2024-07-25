@@ -27,7 +27,6 @@ column_dtypes = {
     'model': 'str',
     'scenario': 'str',
     'powertrain': 'str',
-    'construction_year': 'str',
     'size': 'category'
 }
 
@@ -157,9 +156,6 @@ def update_graphs(selected_combinations, selected_sector, selected_regions):
                         'region': 'World',
                         'variables': year_df['variables'].iloc[0] if 'variables' in year_df.columns else None,
                         'powertrain': year_df['powertrain'].iloc[0] if 'powertrain' in year_df.columns else None,
-                        'size': year_df['size'].iloc[0] if 'size' in year_df.columns else None,
-                        'construction_year': year_df['construction_year'].iloc[
-                            0] if 'construction_year' in year_df.columns else None,
                         'year': year,
                         'val': summed_val,
                         'sector': selected_sector,
