@@ -267,7 +267,7 @@ def update_graphs(selected_combinations, selected_sector, selected_regions):
                     }
                     # Filter out None values
                     new_row = {k: v for k, v in new_row.items() if v is not None}
-                    filtered_df = filtered_df.append(new_row, ignore_index=True)
+                    filtered_df = pd.concat([filtered_df, pd.DataFrame([new_row])])
 
     # Filter based on selected regions
     filtered_df = filtered_df[filtered_df["region"].isin(selected_regions)]
