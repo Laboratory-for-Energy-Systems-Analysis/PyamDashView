@@ -32,3 +32,31 @@ PkBudg1150:
 PkBudg500:
   name: "Peak Budget 500 GtCO2"
   description: "A scenario where cumulative emissions are limited to 500 GtCO2, resulting in a 66% chance of limiting global warming to 1.5°C above pre-industrial levels."
+
+PkBudg1000:
+  name: "Peak Budget 1000 GtCO2"
+  description: "A scenario where cumulative emissions are limited to 1000 GtCO2, resulting in a 50% chance of limiting global warming to 1.5°C above pre-industrial levels."
+
+PkBudg650:
+  name: "Peak Budget 650 GtCO2"
+  description: "A scenario where cumulative emissions are limited to 650 GtCO2, resulting in a 50% chance of limiting global warming to 2°C above pre-industrial levels."
+
+L:
+  name: "Low Emissions"
+  description: "A scenario with low emissions, where significant reductions in greenhouse gas emissions are achieved through aggressive mitigation strategies and policies, leading to a sustainable energy system."
+
+Ma:
+  name: "Medium Emissions"
+  description: "A scenario with medium emissions, where emissions are reduced but not to the extent required for stringent climate targets, leading to moderate global warming and associated impacts."
+
+VLLO:
+  name: "Very Low with Limited Overshoot"
+  description: "A scenario with very low emissions and limited overshoot of greenhouse gas concentrations, where emissions are kept below stringent limits with only a temporary exceedance before returning to sustainable levels."
+
+VLHO:
+  name: "Very Low High Overshoot"
+  description: "A scenario with very low high overshoot of greenhouse gas concentrations, where emissions temporarily exceed stringent limits but are brought back down to sustainable levels in the long term."
+
+H:
+  name: "High Emissions"
+  description: "A scenario with high emissions, where greenhouse gas emissions continue to rise significantly, leading to severe climate impacts and challenges in achieving sustainability goals."

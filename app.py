@@ -1,455 +1,305 @@
 # Imports
 import dash
-from dash import dcc, html
+from dash import dcc, html, no_update
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
 import plotly.express as px
 import pandas as pd
 import yaml
-
 
 # Load YAML files
 def load_yaml(filename):
     with open(filename, "r", encoding="utf-8") as stream:
         return yaml.safe_load(stream)
 
-
 units = load_yaml("data/units.yaml")
 ssp_descriptions = load_yaml("data/ssp_descriptions.yaml")
 rcp_descriptions = load_yaml("data/rcp_descriptions.yaml")
 
-# Define column data types
-column_dtypes = {
-    "region": "category",
-    "variables": "category",
-    "year": "int64",
-    "val": "float64",
-    "sector": "str",
-    "model": "str",
-    "scenario": "str",
-    "powertrain": "str",
-    "size": "category",
-}
-
-# Load the CSV with specified data types
-df = pd.read_csv("data/structured_data.csv", dtype=column_dtypes)
-
 # Initialize the Dash app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX])
-load_figure_template("LUX")  # Load the Lux template
+load_figure_template("LUX")
+server = app.server  # for deployment
 
-# Reference the underlying flask app (Used by gunicorn webserver in Heroku production deployment)
-server = app.server
-
-# Prepare data for dropdowns
-sectors = sorted(df["sector"].unique())
-sectors = [
-    "GMST increase",
-    "Carbon Dioxide emissions",
-    "Population",
-    "Gross Domestic Product",
-] + [
-    s
-    for s in sectors
-    if s
-    not in (
-        "GMST increase",
-        "Carbon Dioxide emissions",
-        "Population",
-        "Gross Domestic Product",
-    )
-]
-
-model_scenarios = df.drop_duplicates(subset=["model", "scenario"])[
-    ["model", "scenario"]
-]
-model_scenarios["combined"] = (
-    model_scenarios["model"] + " - " + model_scenarios["scenario"]
-)
-model_scenario_options = model_scenarios["combined"].tolist()
-
-# Define the app layout
+# Layout
 app.layout = html.Div(
     [
-        # Header Section
         html.Div(
             [
-                # Links Row
                 html.Div(
                     [
                         html.Div(
-                            [
-                                html.A(
-                                    "Contact",
-                                    href="mailto:romain.sacchi@psi.ch",
-                                    target="_blank",
-                                )
-                            ],
-                            style={
-                                "width": "33%",
-                                "display": "inline-block",
-                                "fontSize": "12px",
-                                "textAlign": "left",
-                            },
+                            [html.A("Contact", href="mailto:romain.sacchi@psi.ch", target="_blank")],
+                            style={"width": "33%", "display": "inline-block", "fontSize": "12px", "textAlign": "left"},
                         ),
                         html.Div(
-                            [
-                                html.A(
-                                    "Documentation",
-                                    href="https://premise.readthedocs.io",
-                                    target="_blank",
-                                )
-                            ],
-                            style={
-                                "width": "33%",
-                                "display": "inline-block",
-                                "fontSize": "12px",
-                                "textAlign": "center",
-                            },
+                            [html.A("Documentation", href="https://premise.readthedocs.io", target="_blank")],
+                            style={"width": "33%", "display": "inline-block", "fontSize": "12px", "textAlign": "center"},
                         ),
                         html.Div(
-                            [
-                                html.A(
-                                    "Link to premise github repo",
-                                    href="https://github.com/polca/premise",
-                                    target="_blank",
-                                )
-                            ],
-                            style={
-                                "width": "33%",
-                                "display": "inline-block",
-                                "fontSize": "12px",
-                                "textAlign": "right",
-                            },
+                            [html.A("Link to premise github repo", href="https://github.com/polca/premise", target="_blank")],
+                            style={"width": "33%", "display": "inline-block", "fontSize": "12px", "textAlign": "right"},
                         ),
                     ],
                     style={"marginBottom": "10px"},
                 ),
-                # Title
                 html.H1("premise scenario explorer", style={"marginBottom": "20px"}),
-                # Filters Row
+
                 html.Div(
                     [
-                        # Model-Scenario Dropdown
-                        html.Div(
-                            [
-                                html.Label("Select Model-Scenario Combinations:"),
-                                dcc.Dropdown(
-                                    id="model-scenario-dropdown",
-                                    options=[
-                                        {"label": combo, "value": combo}
-                                        for combo in model_scenario_options
-                                    ],
-                                    value=[model_scenario_options[0]],  # Default value
-                                    multi=True,
-                                ),
+                        html.Label("Select Premise Version:"),
+                        dcc.Dropdown(
+                            id="dataset-version-dropdown",
+                            options=[
+                                {"label": "Version 2.3.0 (dev1)", "value": "structured_data (2, 3, 0, 'dev1').csv"},
+                                {"label": "Version 2.2.0", "value": "structured_data.csv"},
                             ],
-                            style={
-                                "width": "32%",
-                                "display": "inline-block",
-                                "marginRight": "1%",
-                            },
+                            value="structured_data (2, 3, 0, 'dev1').csv",  # <- default is now 2.3.0
+                            clearable=False,
                         ),
-                        # Sector Dropdown
+                    ],
+                    style={"width": "32%", "display": "inline-block", "marginBottom": "20px", "marginRight": "1%"},
+                ),
+
+                html.Div(
+                    [
                         html.Div(
-                            [
-                                html.Label("Select Sector:"),
-                                dcc.Dropdown(
-                                    id="sector-dropdown",
-                                    options=[
-                                        {"label": sector, "value": sector}
-                                        for sector in sectors
-                                    ],
-                                    value=sectors[0],
-                                ),
-                            ],
-                            style={
-                                "width": "32%",
-                                "display": "inline-block",
-                                "marginRight": "1%",
-                            },
+                            [html.Label("Select Model-Scenario Combinations:"), dcc.Dropdown(id="model-scenario-dropdown", multi=True)],
+                            style={"width": "32%", "display": "inline-block", "marginRight": "1%"},
                         ),
-                        # Region Dropdown
                         html.Div(
-                            [
-                                html.Label("Select Regions:"),
-                                dcc.Dropdown(
-                                    id="region-dropdown", value=["World"], multi=True
-                                ),
-                            ],
+                            [html.Label("Select Sector:"), dcc.Dropdown(id="sector-dropdown")],
+                            style={"width": "32%", "display": "inline-block", "marginRight": "1%"},
+                        ),
+                        html.Div(
+                            [html.Label("Select Regions:"), dcc.Dropdown(id="region-dropdown", value=["World"], multi=True)],
                             style={"width": "32%", "display": "inline-block"},
                         ),
                     ],
                     style={"marginBottom": "20px"},
                 ),
-                # Explanatory Text Box
-                html.Div(
-                    id="expl-text-box",
-                    style={
-                        "fontSize": "16px",
-                        "textAlign": "center",
-                        "marginBottom": "20px",
-                    },
-                ),
+
+                html.Div(id="expl-text-box", style={"fontSize": "16px", "textAlign": "center", "marginBottom": "20px"}),
             ],
-            style={
-                "background": "#e9e9e9",
-                "padding": "20px",
-                "borderRadius": "5px",
-                "marginBottom": "20px",
-            },
+            style={"background": "#e9e9e9", "padding": "20px", "borderRadius": "5px", "marginBottom": "20px"},
         ),
-        # Graphs Container
+
+        dcc.Store(id="data-store"),
         html.Div(id="graphs-container"),
     ]
 )
 
-# Create a consistent color map for the unique variables in the dataset
-unique_variables = df["variables"].unique()
+# Set up a color map using the default dataset
+default_df = pd.read_csv("data/structured_data.csv")
+unique_variables = default_df["variables"].unique()
 colors = px.colors.qualitative.Plotly
-color_map = {
-    var: colors[i % len(colors)] for i, var in enumerate(sorted(unique_variables))
-}
+color_map = {var: colors[i % len(colors)] for i, var in enumerate(sorted(unique_variables))}
 
+# Load dataset into dcc.Store
+@app.callback(
+    Output("data-store", "data"),
+    Input("dataset-version-dropdown", "value"),
+)
+def load_dataset(selected_file):
+    print(f"[CALLBACK] load_dataset triggered by dataset: {selected_file}")
+    column_dtypes = {
+        "region": "category",
+        "variables": "category",
+        "year": "int32",  # Smaller than int64
+        "val": "float32",  # Lighter than float64
+        "sector": "category",  # Was str → now category
+        "model": "category",  # Was str → now category
+        "scenario": "category",  # Was str → now category
+        "powertrain": "category",  # Optional, depends on usage
+        "size": "category",  # Already correct
+    }
 
-# Callback to dynamically update region-dropdown options based on the selected sector
-@app.callback(Output("region-dropdown", "options"), [Input("sector-dropdown", "value")])
-def update_region_options(selected_sector):
-    available_regions = df[df["sector"] == selected_sector]["region"].unique()
-    return [{"label": region, "value": region} for region in sorted(available_regions)]
+    df = pd.read_csv(f"data/{selected_file}", dtype=column_dtypes)
+    return df.to_dict("records")
 
+# Update model-scenario and sector dropdowns when dataset changes
+@app.callback(
+    Output("model-scenario-dropdown", "options"),
+    Output("model-scenario-dropdown", "value"),
+    Output("sector-dropdown", "options"),
+    Output("sector-dropdown", "value"),
+    Input("data-store", "data"),
+    State("model-scenario-dropdown", "value"),
+    State("sector-dropdown", "value"),
+)
+def update_dropdowns(data, current_model_scenario_value, current_sector_value):
+    print("[CALLBACK] update_dropdowns triggered")
+    if not data:
+        return no_update, no_update, no_update, no_update
 
-# Callback to update graphs and explanatory text based on selected parameters
+    df = pd.DataFrame(data)
+
+    model_scenarios = df.drop_duplicates(subset=["model", "scenario"])[["model", "scenario"]]
+    model_scenarios["combined"] = model_scenarios["model"] + " - " + model_scenarios["scenario"]
+    model_scenario_options = model_scenarios["combined"].tolist()
+
+    sectors = sorted(df["sector"].unique())
+    sectors = [
+        "GMST increase", "Carbon Dioxide emissions", "Population", "Gross Domestic Product"
+    ] + [s for s in sectors if s not in ("GMST increase", "Carbon Dioxide emissions", "Population", "Gross Domestic Product")]
+
+    new_model_value = (
+        [model_scenario_options[0]]
+        if not current_model_scenario_value or any(v not in model_scenario_options for v in current_model_scenario_value)
+        else no_update
+    )
+
+    new_sector_value = (
+        sectors[0] if current_sector_value not in sectors else no_update
+    )
+
+    return (
+        [{"label": s, "value": s} for s in model_scenario_options],
+        new_model_value,
+        [{"label": s, "value": s} for s in sectors],
+        new_sector_value,
+    )
+
+# Update regions dropdown based on selected sector
+@app.callback(
+    Output("region-dropdown", "options"),
+    Input("sector-dropdown", "value"),
+    State("data-store", "data"),
+)
+def update_region_options(selected_sector, data):
+    print(f"[CALLBACK] update_region_options triggered for sector: {selected_sector}")
+    if not data:
+        return []
+    df = pd.DataFrame(data)
+    regions = df[df["sector"] == selected_sector]["region"].unique()
+    return [{"label": r, "value": r} for r in sorted(regions)]
+
+# Main callback to generate graphs
 @app.callback(
     Output("graphs-container", "children"),
-    [
-        Input("model-scenario-dropdown", "value"),
-        Input("sector-dropdown", "value"),
-        Input("region-dropdown", "value"),
-    ],
+    Input("model-scenario-dropdown", "value"),
+    Input("sector-dropdown", "value"),
+    Input("region-dropdown", "value"),
+    State("data-store", "data"),
+    prevent_initial_call=True,
 )
-def update_graphs(selected_combinations, selected_sector, selected_regions):
-    # Filter the data based on the selected sector
-    filtered_df = df[df["sector"] == selected_sector]
+def update_graphs(selected_combinations, selected_sector, selected_regions, data):
+    print(f"[CALLBACK] update_graphs triggered with: {selected_combinations=}, {selected_sector=}, {selected_regions=}")
+    if not data or not selected_combinations or not selected_regions:
+        raise PreventUpdate
+    df = pd.DataFrame(data)
+    df = pd.DataFrame(data)
+    working_df = df[df["sector"] == selected_sector].copy()  # <- IMPORTANT
 
-    # Handle "World" data that sums to zero
+    # Create a fresh working copy to modify
+    working_df = working_df.copy()
+
     for combo in selected_combinations:
         model, scenario = combo.split(" - ")
-        combo_df = filtered_df[
-            (filtered_df["model"] == model) & (filtered_df["scenario"] == scenario)
-        ]
+        combo_df = working_df[
+            (working_df["model"] == model) & (working_df["scenario"] == scenario)
+            ]
 
         for year in combo_df["year"].unique():
             year_df = combo_df[combo_df["year"] == year]
-            world_val = year_df[year_df["region"] == "World"]["val"].sum()
-            if world_val == 0 or year_df[year_df["region"] == "World"].empty:
-                summed_val = year_df[year_df["region"] != "World"]["val"].sum()
-                filtered_df.loc[
-                    (filtered_df["model"] == model)
-                    & (filtered_df["scenario"] == scenario)
-                    & (filtered_df["year"] == year)
-                    & (filtered_df["region"] == "World"),
-                    "val",
-                ] = summed_val
+            world_df = year_df[year_df["region"] == "World"]
 
-                if year_df[year_df["region"] == "World"].empty:
+            if world_df.empty or world_df["val"].sum() == 0:
+                summed_val = year_df[year_df["region"] != "World"]["val"].sum()
+
+                if not world_df.empty:
+                    working_df.loc[
+                        (working_df["model"] == model)
+                        & (working_df["scenario"] == scenario)
+                        & (working_df["year"] == year)
+                        & (working_df["region"] == "World"),
+                        "val",
+                    ] = summed_val
+                else:
                     new_row = {
                         "region": "World",
-                        "variables": year_df["variables"].iloc[0]
-                        if "variables" in year_df.columns
-                        else None,
+                        "variables": year_df["variables"].iloc[0] if "variables" in year_df.columns else None,
                         "year": year,
                         "val": summed_val,
                         "sector": selected_sector,
                         "model": model,
                         "scenario": scenario,
                     }
-                    # Filter out None values
-                    new_row = {k: v for k, v in new_row.items() if v is not None}
-                    filtered_df = pd.concat([filtered_df, pd.DataFrame([new_row])])
+                    working_df = pd.concat([working_df, pd.DataFrame([new_row])])
 
-    # Filter based on selected regions
-    filtered_df = filtered_df[filtered_df["region"].isin(selected_regions)]
+    working_df = working_df[working_df["region"].isin(selected_regions)]
 
-    # List to hold all graph pairs
     graph_pairs = []
-
-    # Temporary list to hold individual graphs
     temp_graphs = []
 
-    # Create a graph for each selected model-scenario combination
     for combo in selected_combinations:
         model, scenario = combo.split(" - ")
         SSP, RCP = scenario.split("-")
-
-        temp_df = filtered_df[
-            (filtered_df["model"] == model) & (filtered_df["scenario"] == scenario)
+        temp_df = working_df[
+            (working_df["model"] == model) & (working_df["scenario"] == scenario)
         ]
+        if "variables" in temp_df.columns:
+            for variable in temp_df["variables"].unique():
+                if temp_df[temp_df["variables"] == variable]["val"].sum() == 0:
+                    temp_df = temp_df[temp_df["variables"] != variable]
+        temp_df = temp_df.sort_values(by="year")
 
-        # Default color column
-        color_column = "variables"
+        fig_func = px.line if "efficiency" in selected_sector.lower() else px.area
+        fig = fig_func(
+            temp_df,
+            x="year",
+            y="val",
+            color="variables",
+            color_discrete_map=color_map,
+            line_group="region",
+            facet_col="region",
+            labels={"val": "Value", "year": "Year", "variables": "Variables", "region": "Region"},
+            title=f"Model: {model} | Scenario: {scenario}",
+            height=350,
+        )
 
-        # Extract the name and description of the scenario
         ssp_name = ssp_descriptions.get(SSP, {}).get("name", "")
         ssp_desc = ssp_descriptions.get(SSP, {}).get("description", "")
         rcp_name = rcp_descriptions.get(RCP, {}).get("name", "")
         rcp_desc = rcp_descriptions.get(RCP, {}).get("description", "")
 
-        # Remove variables that don't have any non-zero values for any year
-        if "variables" in temp_df.columns:
-            for variable in temp_df["variables"].unique():
-                if temp_df[temp_df["variables"] == variable]["val"].sum() == 0:
-                    temp_df = temp_df[temp_df["variables"] != variable]
-
-        # Sort the data by year before plotting
-        temp_df = temp_df.sort_values(by="year")
-
-        # Ensuring the necessary column is present before plotting
-        if color_column not in temp_df.columns:
-            continue
-
-        if "Transport" in selected_sector:
-            fig = px.area(
-                temp_df,
-                x="year",
-                y="val",
-                color=color_column,
-                color_discrete_map=color_map,
-                line_group="region",
-                facet_col="region",
-                labels={
-                    "val": "Value",
-                    "year": "Year",
-                    color_column: color_column.capitalize(),
-                    "region": "Region",
-                },
-                title=f"Model: {model} | Scenario: {scenario}",
-                height=350,
-            )
-        elif "efficiency" in selected_sector.lower():
-            fig = px.line(
-                temp_df,
-                x="year",
-                y="val",
-                color=color_column,
-                color_discrete_map=color_map,
-                line_group="region",
-                facet_col="region",
-                labels={
-                    "val": "Value",
-                    "year": "Year",
-                    color_column: color_column.capitalize(),
-                    "region": "Region",
-                },
-                title=f"Model: {model} | Scenario: {scenario}",
-                height=350,
-            )
-        else:
-            fig = px.area(
-                temp_df,
-                x="year",
-                y="val",
-                color=color_column,
-                color_discrete_map=color_map,
-                line_group="region",
-                facet_col="region",
-                labels={
-                    "val": "Value",
-                    "year": "Year",
-                    color_column: color_column.capitalize(),
-                    "region": "Region",
-                },
-                title=f"Model: {model} | Scenario: {scenario}",
-                height=350,
-            )
-
-        # Display the name and description of the scenario above each chart
-        # Display the name and description of the scenario above each chart
         scenario_details = html.Div(
             [
-                html.H3(
-                    ssp_name,
-                    style={
-                        "fontSize": "10px",
-                        "textAlign": "left",
-                        "marginLeft": "20px",
-                        "marginRight": "20px",
-                    },
+                html.H3(ssp_name, style={"fontSize": "10px", "marginLeft": "20px"}),
+                html.P(ssp_desc, style={"fontSize": "8px", "marginLeft": "20px"}),
+                html.H3(rcp_name, style={"fontSize": "10px", "marginLeft": "20px"}),
+                html.P(rcp_desc, style={"fontSize": "8px", "marginLeft": "20px"}),
+                dcc.Graph(
+                    id=f"graph-{model}-{scenario}",
+                    figure=fig,
+                    config={"displayModeBar": False},
+                    clear_on_unhover=False,
+                    style={"height": "400px"},  # <- this prevents dynamic resizing
                 ),
-                html.P(
-                    ssp_desc,
-                    style={
-                        "fontSize": "8px",
-                        "textAlign": "left",
-                        "marginBottom": "20px",
-                        "marginLeft": "20px",
-                        "marginRight": "20px",
-                    },
-                ),
-                html.H3(
-                    rcp_name,
-                    style={
-                        "fontSize": "10px",
-                        "textAlign": "left",
-                        "marginLeft": "20px",
-                        "marginRight": "20px",
-                    },
-                ),
-                html.P(
-                    rcp_desc,
-                    style={
-                        "fontSize": "8px",
-                        "textAlign": "left",
-                        "marginBottom": "20px",
-                        "marginLeft": "20px",
-                        "marginRight": "20px",
-                    },
-                ),
-                dcc.Graph(figure=fig),
             ],
             style={"width": "50%", "display": "inline-block"},
-        )  # Set width to 50% and inline-block for side-by-side display
+        )
 
-        # Check if the selected sector has a custom label in the YAML content
         yaxis_label = units.get(selected_sector, {}).get("label", "Value")
-
-        # Update the y-axis label
         fig.update_layout(yaxis_title=yaxis_label)
 
-        # Append the scenario details to the temporary list
         temp_graphs.append(scenario_details)
-
-        # When two graphs are in temp_graphs, append them as a pair to graph_pairs
         if len(temp_graphs) == 2:
             graph_pairs.append(html.Div(temp_graphs, style={"display": "flex"}))
             temp_graphs = []
 
-    # If there's any remaining graph in temp_graphs, append it to graph_pairs
     if temp_graphs:
         graph_pairs.append(html.Div(temp_graphs, style={"display": "flex"}))
 
-    # Extract the expl_text for the selected sector
     expl_text = units.get(selected_sector, {}).get("expl_text", "")
-
-    # Create an explanatory text box (using HTML components) to display the expl_text above the charts
     expl_text_box = html.Div(
-        [
-            html.P(
-                expl_text,
-                style={
-                    "fontSize": "16px",
-                    "textAlign": "center",
-                    "marginBottom": "20px",
-                },
-            )
-        ]
+        [html.P(expl_text, style={"fontSize": "16px", "textAlign": "center", "marginBottom": "20px"})]
     )
 
-    # Return both the explanatory text box and the graph pairs
     return [expl_text_box] + graph_pairs
-
 
 # Run the app
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run(debug=True)
