@@ -46,10 +46,23 @@ def get_dataset(file):
     return pd.read_csv(f"data/{file}", dtype=column_dtypes)
 
 # Color map
-default_df = get_dataset("structured_data.csv")
-unique_variables = default_df["variables"].unique()
+def get_all_variables():
+    files = [
+        "structured_data.csv",
+        "structured_data (2, 3, 0, 'dev1').csv",
+    ]
+    all_vars = set()
+    for file in files:
+        try:
+            df = get_dataset(file)
+            all_vars.update(df["variables"].unique())
+        except Exception as e:
+            print(f"[WARNING] Could not load {file}: {e}")
+    return sorted(all_vars)
+
+all_variables = get_all_variables()
 colors = px.colors.qualitative.Plotly
-color_map = {var: colors[i % len(colors)] for i, var in enumerate(sorted(unique_variables))}
+color_map = {var: colors[i % len(colors)] for i, var in enumerate(all_variables)}
 
 # Layout
 app.layout = html.Div([
